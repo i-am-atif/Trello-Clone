@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Card {
+  id              Int      @id @default(autoincrement())  
+  deadline        String
+  title           String
+  label           String
+  description     String
+  createdBy       User?    @relation(fields: [createdById], references: [id])
+  createdById     Int?
+  insideList      List?    @relation(fields: [insideListId], references: [id])
+  insideListId    Int?
+}
+
+model User {
+  id          Int      @id @default(autoincrement())  
+  firstName   String
+  lastName    String
+  email       String   @unique
+  password    String
+  cards       Card[]
+  boards      UserBoard[]
+}
+
+model Board {
+  id          Int      @id @default(autoincrement())  
+  title       String 
+  users       UserBoard[]
+  lists       List[]
+}
+
+model UserBoard {
+  user               User     @relation(fields: [userId], references: [id])
+  userId             Int
+  board              Board    @relation(fields: [boardId], references: [id])
+  boardId            Int
+
+  @@id([userId, boardId])
+}
+
+
+model List {
+  id               Int       @id @default(autoincrement()) 
+  title            String
+  cards            Card[]
+  insideBoard      Board?    @relation(fields: [insideBoardId], references: [id])
+  insideBoardId    Int?
+}
