@@ -28,24 +28,16 @@ model User {
   email       String   @unique
   password    String
   cards       Card[]
-  boards      UserBoard[]
+  boards      Board[]
 }
 
 model Board {
   id          Int      @id @default(autoincrement())  
   title       String 
-  users       UserBoard[]
+  users       User[]
   lists       List[]
 }
 
-model UserBoard {
-  user               User     @relation(fields: [userId], references: [id])
-  userId             Int
-  board              Board    @relation(fields: [boardId], references: [id])
-  boardId            Int
-
-  @@id([userId, boardId])
-}
 
 
 model List {

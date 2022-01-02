@@ -7,9 +7,9 @@ export const List = objectType({
         t.nonNull.string("title"); 
         
         t.nonNull.list.nonNull.field('cards', {
-            type: 'card',
-            resolve: (parent, args, context) => {
-                return context.db.list
+            type: 'Card',
+            async resolve (parent, args, context) {
+                return await context.prisma.list
                     .findUnique({
                         where: { id: parent.id },
                     })
@@ -17,14 +17,14 @@ export const List = objectType({
             },
         });
 
-        t.list.field('boards', {
+        t.list.field('insideBoard', {
             type: 'Board',
-            resolve: (parent, args, context) => {
-                return context.db.list
+            async resolve (parent, args, context) {
+                return await context.prisma.list
                     .findUnique({
                         where: { id: parent.id || undefined },
                     })
-                    .boards();
+                    .insideBoard();
             },
         });
     },
@@ -81,15 +81,19 @@ export const ListMutation = extendType({
             type: "List",  
             args: {   
                 title: nonNull(stringArg()),
+                boardId: nonNull(intArg()),
             },
             
             async resolve(parent, args, context) {    
                 
-                const { title } = args;
+                const { title, boardId } = args;
                 
                 const newList = context.prisma.list.create({
+                    
+    
                     data: {
                         title,
+                        insideBoard: { connect : { id: boardId}}
                     },
                 });
 

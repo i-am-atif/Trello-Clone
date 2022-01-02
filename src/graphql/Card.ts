@@ -17,14 +17,14 @@ export const Card = objectType({
                     .createdBy();
             },
         });
-        t.field('list', {
+        t.field('insideList', {
             type: 'List',
-            resolve: (parent, args, context) => {
-                return context.db.card
+            async resolve (parent, args, context)  {
+                return await context.prisma.card
                     .findUnique({
                         where: { id: parent.id || undefined },
                     })
-                    .list();
+                    .insideList();
             },
         });
         
@@ -92,7 +92,35 @@ export const CardQuery = extendType({
 export const CardMutation = extendType({ 
     type: "Mutation",    
     definition(t) {
-        t.nonNull.field("createCard", {  
+        t.nonNull.field("createCardofList", {  
+            type: "Card",  
+            args: {   
+                title: nonNull(stringArg()),
+                label: nonNull(stringArg()),
+                description: nonNull(stringArg()),
+                deadline: nonNull(stringArg()),
+                listId: nonNull(intArg()),
+            },
+            
+            async resolve(parent, args, context) {    
+                
+                const { title, label, description, deadline, listId } = args;
+
+                const newCard = context.prisma.card.create({
+                    data: {
+                        title,
+                        label,
+                        description,
+                        deadline, 
+                        insideList: { connect: { id : listId }},
+                    },
+                });
+
+                return await newCard;
+            },
+        });
+
+        t.nonNull.field("createCardofUser", {  
             type: "Card",  
             args: {   
                 title: nonNull(stringArg()),
@@ -104,7 +132,7 @@ export const CardMutation = extendType({
             async resolve(parent, args, context) {    
                 
                 const { title, label, description, deadline } = args;
-                const { userId } = context;
+                const {  userId } = context;
 
                 if (!userId) { 
                     throw new Error("Cannot create without logging in.");
@@ -117,12 +145,14 @@ export const CardMutation = extendType({
                         description,
                         deadline,
                         createdBy: { connect: { id: userId } }, 
+                        
                     },
                 });
 
                 return await newCard;
             },
         });
+
 
 
         // update a card by id

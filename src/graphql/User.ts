@@ -20,7 +20,7 @@ export const User = objectType({
             type: "Board",
             resolve(parent, args, context) {   
                 return context.prisma.user
-                    .findMany({ where: { userId: parent.id } })
+                    .findUnique({ where: { id: parent.id } })
                     .boards();
             },
         }); 

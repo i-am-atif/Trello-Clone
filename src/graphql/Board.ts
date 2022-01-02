@@ -1,4 +1,5 @@
-import { extendType, asNexusMethod, scalarType,  intArg, nonNull, objectType, stringArg } from "nexus";  
+import { ApolloServerPluginUsageReportingDisabled } from "apollo-server-core";
+import { extendType, asNexusMethod, scalarType,list,  intArg, nonNull, objectType, stringArg } from "nexus";  
 import { NexusGenObjects } from "../../nexus-typegen";  
 
 export const Board = objectType({
@@ -9,25 +10,36 @@ export const Board = objectType({
         
         t.nonNull.list.nonNull.field("users", {    
             type: "User",
-            resolve(parent, args, context) {   
-                return context.prisma.board  
-                    .findMany({ where: { id: parent.id } })
+            async resolve(parent, args, context) {   
+                return await context.prisma.board  
+                    .findUnique({ where: { id: parent.id } })
                     .users();
             },
         }); 
         t.nonNull.list.nonNull.field('lists', {
             type: 'List',
-            resolve: (parent, args, context) => {
-                return context.db.board
-                    .findMany({
+            async resolve (parent, args, context) {
+                return await context.prisma.board
+                    .findUnique({
                         where: { id: parent.id },
                     })
-                    .boards();
+                    .lists();
             },
         });
     },
 });
-
+export const BoardQuery = extendType({
+    type:"Query",
+    definition(t){
+        //get all boards
+        t.nonNull.list.nonNull.field("getAllBoards", {   
+            type: "Board",
+            async resolve(parent, args, context, info) {    
+                return await context.prisma.board.findMany();
+            },
+        });
+    }
+})
 
 export const BoardMutation = extendType({ 
     type: "Mutation",    
@@ -52,12 +64,37 @@ export const BoardMutation = extendType({
                     data: {
                         title,
                     },
+                    
+    
                 });
 
                 return await newBoard;
             },
         });
-        
+        // assign user to a board by id
+        t.field('updateBoardById', {
+            type: 'Board',
+            args: {
+                id: nonNull(intArg()),
+                userId: nonNull(list(intArg())),
+             
+            },
+            async resolve(parent, args, context) {
+                const {userId}= args
+                return await context.prisma.card.update({
+                    where: {id: args.id},
+                    data: {
+                        users: {
+                            connect: {
+                                id:{
+                                    in: userId ,
+                                }
+                            }
+                        }
+                    }
+                })
+            }
+        });
         // delete a board by id
         t.field('deleteBoardById', {
             type: 'Board',
