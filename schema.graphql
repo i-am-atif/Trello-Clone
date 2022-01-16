@@ -50,6 +50,7 @@ type Query {
   getAllLists: [List!]!
   getAllListsOfBoard(boardId: Int!): [List!]!
   getAllUsers: [User!]!
+  getBoardsOfUser: [Board!]!
   getCardById(id: Int!): Card
   getListById(id: Int!): List
 }

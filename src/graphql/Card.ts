@@ -105,6 +105,12 @@ export const CardMutation = extendType({
 
                 return await context.prisma.board
                     .findMany({
+                        where: {users:{
+                            some:{
+                                id:userId
+                            },
+                        },
+                    },
                     });
             },
         });
@@ -134,7 +140,12 @@ export const CardMutation = extendType({
                 })
                 return await context.prisma.board
                     .findMany({
-                        // where: {createdByUserId :userId}
+                        where: {users:{
+                            some:{
+                                id:userId
+                            },
+                        },
+                    },
                     });
             }
         });
@@ -163,7 +174,12 @@ export const CardMutation = extendType({
                 })
                 return await context.prisma.board
                     .findMany({
-                        // where: {createdByUserId :userId}
+                        where: {users:{
+                            some:{
+                                id:userId
+                            },
+                        },
+                    },
                     });
             }
         });
@@ -181,7 +197,12 @@ export const CardMutation = extendType({
                 })
                 return await context.prisma.board
                     .findMany({
-                        // where: {createdByUserId :userId}
+                        where: {users:{
+                            some:{
+                                id:userId
+                            },
+                        },
+                    },
                     });
             }
         });

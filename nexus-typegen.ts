@@ -109,6 +109,7 @@ export interface NexusGenFieldTypes {
     getAllLists: NexusGenRootTypes['List'][]; // [List!]!
     getAllListsOfBoard: NexusGenRootTypes['List'][]; // [List!]!
     getAllUsers: NexusGenRootTypes['User'][]; // [User!]!
+    getBoardsOfUser: NexusGenRootTypes['Board'][]; // [Board!]!
     getCardById: NexusGenRootTypes['Card'] | null; // Card
     getListById: NexusGenRootTypes['List'] | null; // List
   }
@@ -165,6 +166,7 @@ export interface NexusGenFieldTypeNames {
     getAllLists: 'List'
     getAllListsOfBoard: 'List'
     getAllUsers: 'User'
+    getBoardsOfUser: 'Board'
     getCardById: 'Card'
     getListById: 'List'
   }

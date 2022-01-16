@@ -31,7 +31,28 @@ export const Board = objectType({
 export const BoardQuery = extendType({
     type:"Query",
     definition(t){
-        
+        //get boards of user
+        t.nonNull.list.nonNull.field("getBoardsOfUser", {
+            type:"Board",
+            async resolve(parent, args, context) {    
+                const { userId } = context;
+
+                if (!userId) {  
+                    throw new Error("Cannot get cards without logging in.");
+                }
+
+                return await context.prisma.board
+                    .findMany({
+                        where: {users:{
+                            some:{
+                                id:userId
+                            },
+                        },
+                    },
+                    });
+                 
+                },   
+        });
         //get all boards
         t.nonNull.list.nonNull.field("getAllBoards", {   
             type: "Board",
