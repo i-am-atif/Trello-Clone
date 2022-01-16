@@ -15,12 +15,9 @@ type Board {
 }
 
 type Card {
-  createdBy: User
-  deadline: String!
-  description: String!
+  description: String
   id: Int!
-  insideList: List
-  label: String!
+  insideList: [List]
   title: String!
 }
 
@@ -32,33 +29,33 @@ type List {
 }
 
 type Mutation {
+  assignUserstoBoard(id: Int!, userId: Int!): Board
   createBoard(title: String!): Board!
-  createCardofList(deadline: String!, description: String!, label: String!, listId: Int!, title: String!): Card!
-  createCardofUser(deadline: String!, description: String!, label: String!, title: String!): Card!
-  createList(boardId: Int!, title: String!): List!
+  createCardofList(description: String, listId: Int!, title: String!): [Board!]
+  createList(boardId: Int!, title: String!): [Board!]
   deleteBoardById(id: Int!): Board
-  deleteCardById(id: Int!): Card
-  deleteListById(id: Int!): List
+  deleteCardById(id: Int!): [Board]
+  deleteListById(id: Int!): [Board]
+  dragCard(id: Int!, listId: Int!): [Board]
   login(email: String!, password: String!): AuthPayload!
   signup(email: String!, firstName: String!, lastName: String!, password: String!): AuthPayload!
-  updateBoardById(id: Int!, userId: [Int]!): Board
-  updateCardById(deadline: String, description: String, id: Int!, label: String, title: String): Card
+  updateCardDetails(description: String, id: Int!, title: String): [Board]
+  updateListDetails(id: Int!, title: String!): [Board]
 }
 
 type Query {
   getAllBoards: [Board!]!
   getAllCards: [Card!]!
-  getAllCardsOfList(insideListId: Int!): [Card!]!
-  getAllCardsOfUser: [Card!]!
+  getAllCardsOfList(listId: Int!): [Card!]!
   getAllLists: [List!]!
   getAllListsOfBoard(boardId: Int!): [List!]!
+  getAllUsers: [User!]!
   getCardById(id: Int!): Card
   getListById(id: Int!): List
 }
 
 type User {
   boards: [Board!]!
-  cards: [Card!]!
   email: String!
   firstName: String!
   id: Int!

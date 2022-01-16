@@ -12,7 +12,7 @@ export const Board = objectType({
             type: "User",
             async resolve(parent, args, context) {   
                 return await context.prisma.board  
-                    .findUnique({ where: { id: parent.id } })
+                    .findUnique({ where: { id: parent.id || undefined} })
                     .users();
             },
         }); 
@@ -21,7 +21,7 @@ export const Board = objectType({
             async resolve (parent, args, context) {
                 return await context.prisma.board
                     .findUnique({
-                        where: { id: parent.id },
+                        where: { id: parent.id || undefined},
                     })
                     .lists();
             },
@@ -31,6 +31,7 @@ export const Board = objectType({
 export const BoardQuery = extendType({
     type:"Query",
     definition(t){
+        
         //get all boards
         t.nonNull.list.nonNull.field("getAllBoards", {   
             type: "Board",
@@ -44,6 +45,7 @@ export const BoardQuery = extendType({
 export const BoardMutation = extendType({ 
     type: "Mutation",    
     definition(t) {
+
         //create a board
         t.nonNull.field("createBoard", {  
             type: "Board",  
@@ -54,7 +56,7 @@ export const BoardMutation = extendType({
             async resolve(parent, args, context) {    
                 
                 const { title } = args;
-                const { userId } = context;
+                const {  userId } = context;
                 
                 if (!userId) { 
                     throw new Error("Cannot create without logging in.");
@@ -63,38 +65,33 @@ export const BoardMutation = extendType({
                 const newBoard = context.prisma.board.create({
                     data: {
                         title,
+                        users: { connect: { id: userId } },
                     },
-                    
-    
                 });
 
                 return await newBoard;
             },
         });
+
         // assign user to a board by id
-        t.field('updateBoardById', {
+        t.field('assignUserstoBoard', {
             type: 'Board',
             args: {
                 id: nonNull(intArg()),
-                userId: nonNull(list(intArg())),
+                userId: nonNull(intArg()),
              
             },
             async resolve(parent, args, context) {
-                const {userId}= args
-                return await context.prisma.card.update({
+                const {  userId } = args;
+                return await context.prisma.board.update({
                     where: {id: args.id},
                     data: {
-                        users: {
-                            connect: {
-                                id:{
-                                    in: userId ,
-                                }
-                            }
-                        }
-                    }
-                })
+                        users: { connect: { id: userId } },
+                    },
+                });
             }
         });
+        
         // delete a board by id
         t.field('deleteBoardById', {
             type: 'Board',
@@ -113,6 +110,5 @@ export const BoardMutation = extendType({
                 })
             }
         });
-
     },
 });
