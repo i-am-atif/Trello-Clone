@@ -77,40 +77,73 @@ export const ListQuery = extendType({
 export const ListMutation = extendType({ 
     type: "Mutation",    
     definition(t) {
-        t.nonNull.field("createList", {  
-            type: "List",  
+        t.list.nonNull.field("createList", {  
+            type: "Board",  
             args: {   
                 title: nonNull(stringArg()),
                 boardId: nonNull(intArg()),
             },
             
             async resolve(parent, args, context) {    
-                
+                const { userId } = context;
                 const { title, boardId } = args;
                 
-                const newList = context.prisma.list.create({
+                await context.prisma.list.create({
                     
-    
+
                     data: {
                         title,
                         insideBoard: { connect : { id: boardId}}
                     },
                 });
 
-                return await newList;
+                return await context.prisma.board
+                    .findMany({
+                        where: {createdByUserId :userId}
+                    });
             },
         });
-
+        
+        //update list
+        t.list.field('updateListDetails', {
+            type: 'Board',
+            args: {
+                id: nonNull(intArg()),
+                title: nonNull(stringArg()),
+            },
+            async resolve(parent, args, context) {
+                const { userId } = context;
+                await context.prisma.list.update({
+                    where: {id: args.id},
+                    data: {
+                          title: args.title,
+                    }
+                })
+                return await context.prisma.board
+                    .findMany({
+                        where: {createdByUserId :userId}
+                    });
+                
+   
+            }
+        });
         // delete a list by id
-        t.field('deleteListById', {
-            type: 'List',
+        t.list.field('deleteListById', {
+            type: 'Board',
             args: {
                 id: nonNull(intArg())
             },
             async resolve(parent, args, context) {
-                return await context.prisma.list.delete({
+                const { userId } = context;
+
+                await context.prisma.list.delete({
                     where: {id: args.id}
                 })
+
+                return await context.prisma.board
+                    .findMany({
+                        where: {createdByUserId :userId}
+                    });
             }
         });
 

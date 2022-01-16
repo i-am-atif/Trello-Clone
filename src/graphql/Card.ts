@@ -6,18 +6,8 @@ export const Card = objectType({
     definition(t) {  
         t.nonNull.int("id"); 
         t.nonNull.string("title"); 
-        t.nonNull.string("label"); 
-        t.nonNull.string("description"); 
-        t.nonNull.string("deadline");
-        t.field("createdBy", {   
-            type: "User",
-            async resolve(parent, args, context) {  
-                return await context.prisma.card
-                    .findUnique({ where: { id: parent.id } })
-                    .createdBy();
-            },
-        });
-        t.field('insideList', {
+        t.string("description");
+        t.list.field('insideList', {
             type: 'List',
             async resolve (parent, args, context)  {
                 return await context.prisma.card
@@ -28,6 +18,7 @@ export const Card = objectType({
             },
         });
         
+
     },
 });
 
@@ -48,23 +39,21 @@ export const CardQuery = extendType({
                     });
                 },   
         });
-        //get cards of user
-        t.nonNull.list.nonNull.field("getAllCardsOfUser", {
+        //get cards of list
+        t.nonNull.list.nonNull.field("getAllCardsOfList", {
             type:"Card",
+            args: {
+                listId: nonNull(intArg())
+            },
             async resolve(parent, args, context) {    
-                const { userId } = context;
-
-                if (!userId) {  
-                    throw new Error("Cannot get cards without logging in.");
-                }
-
                 return await context.prisma.card
                     .findMany({
-                        where: {createdById :userId}
+                        where: {insideListId :args.listId}
                     });
                  
                 },   
         });
+        
         //get all cards
         t.nonNull.list.nonNull.field("getAllCards", {   
             type: "Card",
@@ -92,115 +81,115 @@ export const CardQuery = extendType({
 export const CardMutation = extendType({ 
     type: "Mutation",    
     definition(t) {
-        t.nonNull.field("createCardofList", {  
-            type: "Card",  
+        t.list.nonNull.field("createCardofList", {  
+            type: "Board",  
             args: {   
                 title: nonNull(stringArg()),
-                label: nonNull(stringArg()),
-                description: nonNull(stringArg()),
-                deadline: nonNull(stringArg()),
+                description: stringArg(),
                 listId: nonNull(intArg()),
             },
             
             async resolve(parent, args, context) {    
-                
-                const { title, label, description, deadline, listId } = args;
-
-                const newCard = context.prisma.card.create({
+                const { userId } = context;
+                const { title,  listId, description } = args;
+                if (!userId) { 
+                    throw new Error("Cannot create without logging in.");
+                }
+                await context.prisma.card.create({
                     data: {
                         title,
-                        label,
                         description,
-                        deadline, 
                         insideList: { connect: { id : listId }},
                     },
                 });
 
-                return await newCard;
+                return await context.prisma.board
+                    .findMany({
+                    });
             },
         });
 
-        t.nonNull.field("createCardofUser", {  
-            type: "Card",  
-            args: {   
-                title: nonNull(stringArg()),
-                label: nonNull(stringArg()),
-                description: nonNull(stringArg()),
-                deadline: nonNull(stringArg()),
-            },
-            
-            async resolve(parent, args, context) {    
-                
-                const { title, label, description, deadline } = args;
-                const {  userId } = context;
-
-                if (!userId) { 
-                    throw new Error("Cannot create without logging in.");
-                }
-
-                const newCard = context.prisma.card.create({
-                    data: {
-                        title,
-                        label,
-                        description,
-                        deadline,
-                        createdBy: { connect: { id: userId } }, 
-                        
-                    },
-                });
-
-                return await newCard;
-            },
-        });
-
-
-
-        // update a card by id
-        t.field('updateCardById', {
-            type: 'Card',
+        
+        // update a card details
+        t.list.field('updateCardDetails', {
+            type: 'Board',
             args: {
                 id: nonNull(intArg()),
                 title: (stringArg()),
-                label: (stringArg()),
+                //label: (stringArg()),
                 description: (stringArg()),
-                deadline: (stringArg()),
+                //deadline: (stringArg()),
             },
             async resolve(parent, args, context) {
+               
                 const { userId } = context;
-
-                if (!userId) {  
-                    throw new Error("Cannot update without logging in.");
-                }
-
-                return await context.prisma.card.update({
+                await context.prisma.card.update({
                     where: {id: args.id},
                     data: {
-                        label: args.label,
-                        title: args.title,
-                        description: args.description,
-                        deadline: args.deadline,
+                 //       label: args.label,          this will be used in future
+                      description: args.description,
+                 //       deadline: args.deadline,
+                          title: args.title,
                     }
                 })
+                return await context.prisma.board
+                    .findMany({
+                        // where: {createdByUserId :userId}
+                    });
             }
         });
+
+        // drag and drop card
+        t.list.field('dragCard', {
+            type: 'Board',
+            args: {
+                id: nonNull(intArg()),
+                //label: (stringArg()),
+                //description: (stringArg()),
+                //deadline: (stringArg()),
+                listId: nonNull(intArg()),
+            },
+            async resolve(parent, args, context) {
+               
+                const { userId } = context;
+                await context.prisma.card.update({
+                    where: {id: args.id},
+                    data: {
+                 //       label: args.label,          this will be used in future
+                 //       description: args.description,
+                 //       deadline: args.deadline,
+                          insideList: { connect: { id : args.listId }},
+                    }
+                })
+                return await context.prisma.board
+                    .findMany({
+                        // where: {createdByUserId :userId}
+                    });
+            }
+        });
+
         // delete a card by id
-        t.field('deleteCardById', {
-            type: 'Card',
+        t.list.field('deleteCardById', {
+            type: 'Board',
             args: {
                 id: nonNull(intArg())
             },
             async resolve(parent, args, context) {
                 const { userId } = context;
-
-                if (!userId) {  
-                    throw new Error("Cannot delete without logging in.");
-                }
-
-                return await context.prisma.card.delete({
+                await context.prisma.card.delete({
                     where: {id: args.id}
                 })
+                return await context.prisma.board
+                    .findMany({
+                        // where: {createdByUserId :userId}
+                    });
             }
         });
 
     },
 });
+
+
+
+
+

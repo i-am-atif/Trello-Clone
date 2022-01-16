@@ -37,10 +37,8 @@ export interface NexusGenObjects {
     title: string; // String!
   }
   Card: { // root type
-    deadline: string; // String!
-    description: string; // String!
+    description?: string | null; // String
     id: number; // Int!
-    label: string; // String!
     title: string; // String!
   }
   List: { // root type
@@ -79,12 +77,9 @@ export interface NexusGenFieldTypes {
     users: NexusGenRootTypes['User'][]; // [User!]!
   }
   Card: { // field return type
-    createdBy: NexusGenRootTypes['User'] | null; // User
-    deadline: string; // String!
-    description: string; // String!
+    description: string | null; // String
     id: number; // Int!
-    insideList: NexusGenRootTypes['List'] | null; // List
-    label: string; // String!
+    insideList: Array<NexusGenRootTypes['List'] | null> | null; // [List]
     title: string; // String!
   }
   List: { // field return type
@@ -94,31 +89,31 @@ export interface NexusGenFieldTypes {
     title: string; // String!
   }
   Mutation: { // field return type
+    assignUserstoBoard: NexusGenRootTypes['Board'] | null; // Board
     createBoard: NexusGenRootTypes['Board']; // Board!
-    createCardofList: NexusGenRootTypes['Card']; // Card!
-    createCardofUser: NexusGenRootTypes['Card']; // Card!
-    createList: NexusGenRootTypes['List']; // List!
+    createCardofList: NexusGenRootTypes['Board'][] | null; // [Board!]
+    createList: NexusGenRootTypes['Board'][] | null; // [Board!]
     deleteBoardById: NexusGenRootTypes['Board'] | null; // Board
-    deleteCardById: NexusGenRootTypes['Card'] | null; // Card
-    deleteListById: NexusGenRootTypes['List'] | null; // List
+    deleteCardById: Array<NexusGenRootTypes['Board'] | null> | null; // [Board]
+    deleteListById: Array<NexusGenRootTypes['Board'] | null> | null; // [Board]
+    dragCard: Array<NexusGenRootTypes['Board'] | null> | null; // [Board]
     login: NexusGenRootTypes['AuthPayload']; // AuthPayload!
     signup: NexusGenRootTypes['AuthPayload']; // AuthPayload!
-    updateBoardById: NexusGenRootTypes['Board'] | null; // Board
-    updateCardById: NexusGenRootTypes['Card'] | null; // Card
+    updateCardDetails: Array<NexusGenRootTypes['Board'] | null> | null; // [Board]
+    updateListDetails: Array<NexusGenRootTypes['Board'] | null> | null; // [Board]
   }
   Query: { // field return type
     getAllBoards: NexusGenRootTypes['Board'][]; // [Board!]!
     getAllCards: NexusGenRootTypes['Card'][]; // [Card!]!
     getAllCardsOfList: NexusGenRootTypes['Card'][]; // [Card!]!
-    getAllCardsOfUser: NexusGenRootTypes['Card'][]; // [Card!]!
     getAllLists: NexusGenRootTypes['List'][]; // [List!]!
     getAllListsOfBoard: NexusGenRootTypes['List'][]; // [List!]!
+    getAllUsers: NexusGenRootTypes['User'][]; // [User!]!
     getCardById: NexusGenRootTypes['Card'] | null; // Card
     getListById: NexusGenRootTypes['List'] | null; // List
   }
   User: { // field return type
     boards: NexusGenRootTypes['Board'][]; // [Board!]!
-    cards: NexusGenRootTypes['Card'][]; // [Card!]!
     email: string; // String!
     firstName: string; // String!
     id: number; // Int!
@@ -138,12 +133,9 @@ export interface NexusGenFieldTypeNames {
     users: 'User'
   }
   Card: { // field return type name
-    createdBy: 'User'
-    deadline: 'String'
     description: 'String'
     id: 'Int'
     insideList: 'List'
-    label: 'String'
     title: 'String'
   }
   List: { // field return type name
@@ -153,31 +145,31 @@ export interface NexusGenFieldTypeNames {
     title: 'String'
   }
   Mutation: { // field return type name
+    assignUserstoBoard: 'Board'
     createBoard: 'Board'
-    createCardofList: 'Card'
-    createCardofUser: 'Card'
-    createList: 'List'
+    createCardofList: 'Board'
+    createList: 'Board'
     deleteBoardById: 'Board'
-    deleteCardById: 'Card'
-    deleteListById: 'List'
+    deleteCardById: 'Board'
+    deleteListById: 'Board'
+    dragCard: 'Board'
     login: 'AuthPayload'
     signup: 'AuthPayload'
-    updateBoardById: 'Board'
-    updateCardById: 'Card'
+    updateCardDetails: 'Board'
+    updateListDetails: 'Board'
   }
   Query: { // field return type name
     getAllBoards: 'Board'
     getAllCards: 'Card'
     getAllCardsOfList: 'Card'
-    getAllCardsOfUser: 'Card'
     getAllLists: 'List'
     getAllListsOfBoard: 'List'
+    getAllUsers: 'User'
     getCardById: 'Card'
     getListById: 'List'
   }
   User: { // field return type name
     boards: 'Board'
-    cards: 'Card'
     email: 'String'
     firstName: 'String'
     id: 'Int'
@@ -187,20 +179,16 @@ export interface NexusGenFieldTypeNames {
 
 export interface NexusGenArgTypes {
   Mutation: {
+    assignUserstoBoard: { // args
+      id: number; // Int!
+      userId: number; // Int!
+    }
     createBoard: { // args
       title: string; // String!
     }
     createCardofList: { // args
-      deadline: string; // String!
-      description: string; // String!
-      label: string; // String!
+      description?: string | null; // String
       listId: number; // Int!
-      title: string; // String!
-    }
-    createCardofUser: { // args
-      deadline: string; // String!
-      description: string; // String!
-      label: string; // String!
       title: string; // String!
     }
     createList: { // args
@@ -216,6 +204,10 @@ export interface NexusGenArgTypes {
     deleteListById: { // args
       id: number; // Int!
     }
+    dragCard: { // args
+      id: number; // Int!
+      listId: number; // Int!
+    }
     login: { // args
       email: string; // String!
       password: string; // String!
@@ -226,21 +218,19 @@ export interface NexusGenArgTypes {
       lastName: string; // String!
       password: string; // String!
     }
-    updateBoardById: { // args
-      id: number; // Int!
-      userId: Array<number | null>; // [Int]!
-    }
-    updateCardById: { // args
-      deadline?: string | null; // String
+    updateCardDetails: { // args
       description?: string | null; // String
       id: number; // Int!
-      label?: string | null; // String
       title?: string | null; // String
+    }
+    updateListDetails: { // args
+      id: number; // Int!
+      title: string; // String!
     }
   }
   Query: {
     getAllCardsOfList: { // args
-      insideListId: number; // Int!
+      listId: number; // Int!
     }
     getAllListsOfBoard: { // args
       boardId: number; // Int!
